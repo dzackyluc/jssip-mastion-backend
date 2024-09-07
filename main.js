@@ -71,6 +71,7 @@ function setupSessionHandlers(session) {
   });
 
   session.on('peerconnection', (e) => {
+    console.log("Peer connection established");
     const peerConnection = e.peerconnection;
     peerConnection.ontrack = (event) => {
       const remoteVideo = document.getElementById('remoteVideo');
