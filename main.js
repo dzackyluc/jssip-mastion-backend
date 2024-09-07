@@ -72,22 +72,34 @@ function setupSessionHandlers(session) {
 
   session.on('peerconnection', (e) => {
     const peerConnection = e.peerconnection;
-    peerConnection.addEventListener('track', (event) => {
-      document.getElementById('remoteVideo').srcObject = event.streams[0];
-    });
+    peerConnection.ontrack = (event) => {
+      const remoteVideo = document.getElementById('remoteVideo');
+      if (remoteVideo.srcObject !== event.streams[0]) {
+        remoteVideo.srcObject = event.streams[0];
+        console.log('Remote stream added.');
+      }
+    };
   });
 
   session.on('ended', () => {
     console.log('Call ended');
     document.getElementById('callButton').disabled = false;
     document.getElementById('hangupButton').disabled = true;
+    const remoteVideo = document.getElementById('remoteVideo');
+    remoteVideo.srcObject = null; // Clear the video element
     currentSession = null;
   });
 
   session.on('failed', (e) => {
-    console.error('Call failed:', e.cause, e.message, e.cause);
+    if (e.cause instanceof RTCError) {
+      console.error('RTCError details:', e.cause.message, e.cause.name, e.cause.sdp);
+    } else {
+      console.error('Non-RTCError cause:', e.cause);
+    }
     document.getElementById('callButton').disabled = false;
     document.getElementById('hangupButton').disabled = true;
+    const remoteVideo = document.getElementById('remoteVideo');
+    remoteVideo.srcObject = null; // Clear the video element
     currentSession = null;
   });
 }
